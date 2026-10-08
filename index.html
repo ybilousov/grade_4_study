@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Virginia Studies Practice</title>
+<style>
+:root{--bg:#f6f3ec;--card:#fff;--ink:#2b2a27;--muted:#7a766d;--accent:#8a4b2a;--good:#3f7d4e;--warn:#b5651d;--line:#e4dfd4}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--line)}
+h1{font-size:1.1rem;margin:0}
+h2{margin:0 0 12px;font-size:1.1rem}
+h3{margin:0 0 6px;font-size:1rem}
+.wrap{max-width:820px;margin:0 auto;padding:20px}
+button,.btnlike{font:inherit;border:0;border-radius:8px;padding:9px 16px;background:var(--accent);color:#fff;cursor:pointer;display:inline-block}
+button:hover,.btnlike:hover{filter:brightness(1.08)}
+button:disabled{opacity:.5;cursor:default}
+.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.danger{background:transparent;color:var(--warn);border:1px solid var(--warn)}
+.good{background:var(--good)}
+input,select{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.between{justify-content:space-between}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{background:transparent;color:var(--muted);padding:7px 12px}
+.tabs button.on{background:var(--accent);color:#fff}
+.profiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.pcard{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.pick{flex:1;background:transparent;color:var(--ink);text-align:left;display:flex;align-items:center;gap:10px;padding:14px;border-radius:0}
+.pick:hover{background:#faf7f1}
+.pick small{display:block;color:var(--muted)}
+.del{background:transparent;color:var(--muted);padding:0 12px;border-radius:0}
+.avatar{width:38px;height:38px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:var(--muted);font-size:.9rem;margin:10px 0}
+.tag{background:#efe6da;color:var(--accent);padding:3px 8px;border-radius:6px;font-weight:600;font-size:.85rem}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar>span{display:block;height:100%;background:var(--good)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px;min-height:240px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 4px 18px rgba(0,0,0,.05)}
+.label{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+.text{font-size:1.2rem;line-height:1.5;margin:0 0 14px}
+.hint{color:var(--muted);font-style:italic;margin:0 0 14px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.actions>*{flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.topic{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.topic .top{display:flex;justify-content:space-between;font-size:.9rem;color:var(--muted)}
+.topic .actions{margin-top:auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat b{font-size:1.5rem;display:block}
+.stat span{color:var(--muted);font-size:.85rem}
+.std{margin:10px 0}
+.std .top{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:4px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 14px}
+.panel details{border-bottom:1px solid var(--line);padding:10px 0}
+.panel details:last-child{border-bottom:0}
+.panel summary{cursor:pointer}
+.panel p{margin:6px 0 0;color:var(--muted)}
+.opt{text-align:left;background:#fff;color:var(--ink);border:1px solid var(--line);width:100%;margin-top:8px;padding:12px 14px}
+.opt:hover{background:#faf7f1;filter:none}
+.opt.right{background:#e3f1e6;border-color:var(--good);color:#1f4d2c}
+.opt.wrong{background:#f8e4d6;border-color:var(--warn);color:#7a3d10}
+.feedback{margin-top:12px;font-weight:600}
+.empty{text-align:center;padding:40px 10px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Virginia Studies Practice</h1>
+  <div id="hdr"></div>
+</header>
+<main id="app" class="wrap"></main>
+
+<script>
+/* ==========================================================
+   COURSE CONTENT
+   Each card: [question, answer, hint]
+   Topics are listed in suggested teaching order.
+   ========================================================== */
+const TOPICS = [
+{id:"geo", title:"Virginia Geography", cards:[
+["What are Virginia's five physical regions, from east to west?","Coastal Plain (Tidewater), Piedmont, Blue Ridge, Valley and Ridge, Appalachian Plateau","Listed from the ocean toward the mountains."],
+["Which region lies closest to the Atlantic Ocean and Chesapeake Bay?","The Coastal Plain (Tidewater)","Flat, low land."],
+["Which region lies between the Coastal Plain and the Blue Ridge?","The Piedmont","Its name means 'foot of the mountain.'"],
+["Which region is home to the fertile Shenandoah Valley?","The Valley and Ridge","Long parallel ridges and valleys."],
+["Which mountain range forms the eastern rim of the Shenandoah Valley?","The Blue Ridge Mountains","Part of the Appalachians."],
+["What large estuary cuts deeply into Virginia's eastern shore?","The Chesapeake Bay","The largest estuary in the United States."],
+["Which river flows through Richmond and empties into the Chesapeake Bay near Jamestown?","The James River","Named after King James I."],
+["Which river forms much of Virginia's northern border and flows past Loudoun County?","The Potomac River","It also forms part of the boundary with Maryland."],
+["What is the capital of Virginia?","Richmond","It sits on the James River."],
+["What is the 'fall line'?","The boundary where rivers drop from the Piedmont to the Coastal Plain, creating rapids and waterfalls","Richmond is located on it."],
+["Which is the longest river that flows entirely within Virginia?","The James River","It begins in the Blue Ridge Mountains."],
+["Which national park protects a long stretch of the Blue Ridge Mountains?","Shenandoah National Park","Skyline Drive runs through it."]
+]},
+{id:"native", title:"Native Peoples of Virginia", cards:[
+["What was the large alliance of Native tribes led by Chief Powhatan called?","The Powhatan Confederacy","Its name comes from the chief's title."],
+["Which Native people lived in the Piedmont and Blue Ridge foothills and spoke a Siouan language?","The Monacan","A different language family from the Powhatans."],
+["What were the three crops grown together by many Eastern Woodland peoples?","Corn, beans, and squash (the Three Sisters)","Each plant helps the others grow."],
+["What did Native peoples use to hunt deer?","Bows and arrows","Hunters also used traps and fire."],
+["How did Native peoples clear land for farming?","They used fire to burn off underbrush and trees","Controlled burns kept fields open."],
+["What did Native peoples use to travel along rivers?","Dugout canoes","Carved from a single log."],
+["What shellfish did Native peoples gather along the Chesapeake Bay?","Oysters","They are still important on the bay today."],
+["What material did Native peoples use to make clothing from deer?","Deerskin (leather)","Hides were scraped and softened."],
+["Which two Virginia tribes still have reservations along the Pamunkey and Mattaponi Rivers?","The Pamunkey and Mattaponi","Both are descendants of the Powhatan Confederacy."],
+["Had people lived in what is now Virginia for a long time before 1607?","Yes, Native peoples had lived there for thousands of years","Jamestown was founded on land that was already home to Native nations."]
+]},
+{id:"vs3", title:"Jamestown & Early Settlement", cards:[
+["What kind of venture was the founding of Jamestown?","An economic venture","It was started to make money."],
+["Who financed and organized the settlement of Jamestown?","The stockholders of the Virginia Company of London","A group of English business investors."],
+["What two precious metals did the English investors hope to find in Virginia?","Gold and silver","Shiny, valuable metals."],
+["What did the Virginia Company want to find that could not be grown or obtained in England?","Raw materials","Timber, furs, and natural resources."],
+["Besides finding gold, what did the stockholders hope to open with the settlement?","New trade markets","Places to buy and sell goods."],
+["In what year was Jamestown founded?","1607","Early in the 17th century."],
+["Jamestown was the first permanent English settlement in North America. True or False?","True","Earlier settlements like Roanoke did not last."],
+["Who granted the charters to the Virginia Company of London?","King James I of England","The monarch after whom Jamestown was named."],
+["What two rights did the Charters of the Virginia Company give to the settlers?","The right to establish a settlement and the rights of Englishmen","Permission to build and legal protections."],
+["Did the settlers ever find real gold or silver at Jamestown?","No","They found 'fool's gold' instead."],
+["In 1607, Jamestown was located on a narrow strip of land surrounded by water on three sides called a what?","Peninsula","Land with water on three sides."],
+["What physical geography feature is Jamestown located on today?","An island","Completely surrounded by water."],
+["What caused Jamestown to turn from a peninsula into an island over centuries?","Weather and water erosion","Waves washed away the narrow isthmus."],
+["On which major Virginia river was Jamestown established?","The James River","Named after King James I."],
+["Why did the settlers choose a site deep inland rather than right on the ocean?","To defend against Spanish sea attacks","England's Catholic rival was patrolling the coast."],
+["Why was deep water along the shore an advantage for the settlers?","Ships could dock close to the shore to unload goods easily","No need for small rowboats to reach land."],
+["What did the settlers mistakenly believe about the water supply at the site?","They believed there was a good supply of fresh drinking water","It was actually salty and brackish."],
+["What shapes were the walls of the original Jamestown fort built in?","A triangle","A 3-sided geometric shape."],
+["What are the raised circular corner structures of the triangular fort called?","Bastions or bulwarks","Where cannons were placed."],
+["In which Virginia geographic region is Jamestown located?","Coastal Plain (Tidewater) region","Flat land near the Chesapeake Bay."],
+["What major environmental problem did the marshy Jamestown site have?","Unsafe drinking water and disease-carrying mosquitoes","Stagnant swamp water caused malaria."],
+["What kind of water is a mix of fresh river water and salty ocean water?","Brackish water","Starts with 'B' and makes people sick if drunk."],
+["What critical skills did many of the early gentlemen settlers lack?","Farming, building, and manual labor skills","They were wealthy aristocrats who did not work with their hands."],
+["What severe weather event occurred in Virginia between 1606 and 1612?","A severe drought","A long period with almost no rain."],
+["What was the winter of 1609–1610 known as in Jamestown history?","The Starving Time","Nearly 80% of the settlers died of hunger."],
+["Who took charge of Jamestown and instituted the rule 'He that will not work shall not eat'?","Captain John Smith","English soldier and explorer."],
+["What program did Captain John Smith implement to ensure the colony survived?","A forced work program","Everyone had to farm and build or starve."],
+["What two supply arrivals helped the remaining colonists survive after the Starving Time?","Supply ships from England","Ships carrying food, tools, and Lord De La Warr."],
+["What agricultural shift helped the colony survive and become self-sustaining?","Focusing on farming and growing their own food","Moving away from searching for gold to planting crops."],
+["Which leader's strong discipline stabilized the colony after 1608?","Captain John Smith","He also established trading with native tribes."],
+["Who was the paramount chief of the local native tribes around Jamestown?","Chief Powhatan (Wahunsenacawh)","Leader of over 30 Algonquin-speaking tribes."],
+["Who initiated trade relationships between the English settlers and the native peoples?","Captain John Smith","He bargained with Chief Powhatan."],
+["What goods did the native peoples trade to the English settlers?","Food, corn, and furs","Things the starving settlers desperately needed to eat."],
+["What goods did the English settlers trade to the Powhatans?","Tools, pots, copper, and glass beads","Manufactured metal and decorative items."],
+["Which daughter of Chief Powhatan served as a contact and diplomat between the two groups?","Pocahontas","She befriended the colonists and later married John Rolfe."],
+["What two essential crops did the native peoples teach the English settlers how to grow?","Corn and tobacco","One was their main food; the other became their cash crop."],
+["Over time, why did the relationship between the native peoples and colonists turn hostile?","The colonists took over more native land for growing tobacco","The English settlers kept expanding."],
+["How did the native peoples view the English colonists as the colony expanded?","As invaders who would take over their land","Unwelcome intruders encroaching on their territory."],
+["Did the native people believe individuals could personally own the land?","No, they viewed land as shared by the community","Contrast with the English system of private property."],
+["What English colonist did Pocahontas marry in 1614, bringing temporary peace?","John Rolfe","The man who introduced sweet West Indian tobacco."],
+["In what year did the Governor call the first General Assembly meeting?","1619","A milestone year for government in America."],
+["What system of government was established at Jamestown in 1619?","Representative government","Citizens elect leaders to make laws for them."],
+["Who was the royal colonial governor who called the 1619 meeting?","Governor George Yeardley","He arrived with instructions to establish elected governance."],
+["What was the group of citizen representatives elected from each settlement called?","Burgesses","Two were chosen from each of the 11 boroughs."],
+["How many burgesses were elected to the first assembly in 1619?","22 burgesses","Two from each of the eleven plantation districts."],
+["What three groups made up the General Assembly in 1619?","The Governor, the Governor's Council, and the Burgesses","The leader, his advisors, and elected citizens."],
+["Who was allowed to vote for burgesses in 1619?","Free adult white men who owned property","Women, enslaved people, and servants could not vote."],
+["In the 1640s, the burgesses separated to form their own legislative body called what?","The House of Burgesses","The lower house of the legislature."],
+["Why is the House of Burgesses historically important?","It was the first elected legislative body in English North America","The foundation of American democracy."],
+["What is the modern name of the Virginia General Assembly today?","The Virginia General Assembly","It continues to meet annually in Richmond, Virginia."],
+["In what year did Portuguese sailors bring the first recorded captive Africans to Virginia?","1619","The same year the General Assembly first met."],
+["What modern-day country in southwestern Africa were the first Africans taken from?","Angola (Kingdom of Ndongo)","A Portuguese-colonized region in southwest Africa."],
+["Did the first Africans arrive in Virginia willingly or against their will?","Against their will","They were captured and forced onto slave ships."],
+["What English privateer ship brought '20 and odd' Africans to Point Comfort?","The White Lion","Named after a predatory white cat."],
+["What was the arrival of Africans at Point Comfort in 1619 the beginning of in the English colonies?","The Virginia slave labor system","Unfree forced servitude based on race."],
+["What crop required huge amounts of cheap, forced labor to clear land and harvest?","Tobacco","Virginia's 'green gold'."],
+["What is an indentured servant?","A person who agrees to work without pay for a set period of years in exchange for passage to America","A temporary contract worker."],
+["Did the arrival of Africans expand the tobacco economy of Virginia?","Yes, by providing forced agricultural labor","It fueled massive plantation expansion."],
+["Over the 1600s, how did Virginia laws change regarding Africans?","Laws were passed making lifelong, hereditary race-based slavery legal","Children inherited their mother's enslaved status."],
+["At what coastal port did the ship carrying the first Africans arrive in Virginia?","Point Comfort (modern-day Hampton, Virginia)","Fort Monroe sits there today."],
+["In what year did a large planned arrival of English women reach Jamestown?","1620 (ships arranged starting in 1619/1620)","One year after the first General Assembly."],
+["Why was the arrival of additional women so crucial for Jamestown?","It allowed settlers to marry, start families, and make the colony permanent","Without families, settlements disappear."],
+["What did male settlers pay to sponsor the passage of their new wives to Virginia?","Tobacco (about 120-150 pounds)","They paid using the colony's cash crop."],
+["Before 1620, was Jamestown mostly a military/business post or a family community?","A military and male business outpost","Almost all initial settlers were men and boys."],
+["Did English women arriving in 1620 have the right to vote in the General Assembly?","No","Voting was limited to free male property owners."],
+["What cash crop saved Jamestown economically and made the colony profitable?","Tobacco","A leafy plant grown for smoking."],
+["Who successfully cross-bred West Indian tobacco seeds with local plants in 1612?","John Rolfe","Pocahontas's husband."],
+["What is a 'cash crop'?","A crop grown primarily to sell for money rather than for personal consumption","Grown for profit, not to eat."],
+["Where was most of Virginia's tobacco exported to be sold?","England and Europe","Across the Atlantic Ocean."],
+["Because paper currency was rare, what did Virginians often use as money to buy goods?","Tobacco","Barter currency based on leaf weight."],
+["What did Virginia's economy rely on for over two centuries as its single main export?","Tobacco agriculture","A single-crop agricultural economy."],
+["What major environmental impact did growing tobacco have on Virginia's soil?","It exhausted nutrients from the soil quickly","Planters constantly cleared new land because fields wore out."],
+["Because tobacco depleted soil nutrients quickly, what did planters constantly need more of?","More land","This led to conflicts with native tribes."],
+["The expansion of tobacco farming created an enormous demand for what kind of labor?","Cheap, reliable, and forced labor (enslaved Africans)","Field hands to plant, weed, and cure tobacco."],
+["What type of large farms developed across Virginia along the rivers to grow tobacco?","Plantations","Large estates with private docks."],
+["What were the three ships that carried the original 1607 settlers to Jamestown?","The Susan Constant, Godspeed, and Discovery","Three wooden sailing vessels."],
+["Which of the three original ships was the largest?","The Susan Constant","Commanded by Christopher Newport."],
+["Who was the overall naval commander of the three-ship fleet that reached Virginia in 1607?","Captain Christopher Newport","A privateer and mariner with one arm."],
+["Why did the settlers choose to build on water rather than high in the mountains?","To easily transport goods and communicate by boat with England","Waterways were the colonial highways."],
+["What body of water did the ships sail through immediately before entering the James River?","Chesapeake Bay","Virginia's large estuary."],
+["What disease transmitted by mosquitoes caused high fevers and killed many early colonists?","Malaria","A mosquito-borne illness."],
+["Why did Jamestown's shallow wells produce contaminated water during summer?","Low river levels allowed salty, stagnant swamp water to seep in","Tides pushed saltwater into fresh aquifers."],
+["Who was the Virginia Company governor whose arrival in June 1610 stopped settlers from abandoning Jamestown?","Lord De La Warr (Thomas West)","Delaware is named after him."],
+["What language family was spoken by the Powhatan tribes living near Jamestown?","Algonquian","One of Virginia's three major native language groups."],
+["What types of dwellings did the Powhatan live in?","Yehakins (longhouses made of bent saplings and woven reed mats)","Barrel-shaped houses covered in bark or woven mats."],
+["What was Pocahontas's Christian name after she converted and was baptized?","Rebecca","Lady Rebecca Rolfe."],
+["What native leader succeeded Chief Powhatan and led attacks against the expanding English settlements in 1622?","Opechancanough","Chief Powhatan's brother."],
+["Where did the first General Assembly meet in Jamestown in July 1619?","Jamestown Church","The largest wooden building in the fort."],
+["What is a 'legislative body'?","A group of people with the legal authority to create, debate, and pass laws","Lawmakers."],
+["What was the governor's power to reject laws passed by the burgesses called?","Veto power","Saying 'no' to a passed bill."],
+["What Portuguese slave ship was the White Lion attacking when it captured the first Africans?","The San Juan Bautista","A Spanish/Portuguese vessel bound for Vera Cruz."],
+["What is the difference between an indentured servant and an enslaved person?","An indentured servant is freed after a set contract of years; an enslaved person is held in forced bondage for life","One has a fixed end date; the other does not."],
+["Did children born to enslaved African mothers in Virginia become free or enslaved under later colonial laws?","Enslaved for life","Status was inherited directly from the mother."],
+["Why did Virginia planters build private wharves and docks directly on the rivers?","To load tobacco directly onto English transport ships from their plantations","They didn't need centralized port cities."],
+["How did tobacco cultivation affect the development of large towns in 17th-century Virginia?","Very few towns grew because people lived spread out along riverfront plantations","Virginia remained rural and dispersed."],
+["Who was the ultimate owner of all newly claimed lands in Virginia under English law?","The King of England","The royal sovereign."],
+["Why did the settlers choose a site with timber and pine trees nearby?","To supply wood for building shelters, palisade walls, and ships","Essential lumber construction material."],
+["What did the starving colonists eat during the winter of 1609–1610 to stay alive?","Horses, dogs, cats, rats, boots, and leather belts","Extreme survival measures."],
+["How many total representatives made up the House of Burgesses when it began meeting separately?","Burgesses from each settlement/county (initially 22)","Two elected from each district."],
+["Why is John Rolfe considered a critical figure in Jamestown's economic survival?","He introduced sweet Spanish-West Indian tobacco that made Virginia profitable","He turned Jamestown into a moneymaking colony."]
+]},
+{id:"colonial", title:"Colonial Life & Government", cards:[
+["What was the capital of colonial Virginia from 1607 until 1699?","Jamestown","The capital was later moved to Williamsburg."],
+["In what year did the colonial capital move to Williamsburg?","1699","A fire at the statehouse prompted the move."],
+["What was the official residence of the colonial governor in Williamsburg called?","The Governor's Palace","It was a grand brick home for royal governors."],
+["Under the headright system, how much land did a settler receive for each person whose passage they paid?","50 acres","Land was a reward for bringing people to the colony."],
+["What church was the official church of colonial Virginia?","The Church of England (Anglican Church)","Local parishes also handled some government duties."],
+["What uprising in 1676 was led by Nathaniel Bacon against Governor William Berkeley?","Bacon's Rebellion","Frontier settlers were angry about Native attacks and taxes."],
+["What were Virginia's main exports besides tobacco?","Lumber, grain, and animal furs","Natural resources shipped to England."],
+["What kind of skilled workers, such as blacksmiths and silversmiths, lived in colonial Williamsburg?","Craftsmen and artisans","They made goods the colony needed."],
+["Which trade route linked Virginia's plantations and ports to England?","The Atlantic trade route","Ships carried tobacco east and manufactured goods west."]
+]},
+{id:"revolution", title:"Revolution & Independence", cards:[
+["Who wrote the Virginia Declaration of Rights in 1776?","George Mason","Its ideas influenced the U.S. Bill of Rights."],
+["What famous words did Patrick Henry speak in 1775 urging Virginians to prepare for war?","'Give me liberty, or give me death!'","He spoke at St. John's Church in Richmond."],
+["Which Virginian wrote the Declaration of Independence?","Thomas Jefferson","He was from Albemarle County."],
+["Which Virginian commanded the Continental Army during the Revolution?","George Washington","He later became the first U.S. president."],
+["What 1781 battle in Virginia effectively ended major fighting in the Revolutionary War?","The Battle of Yorktown","Allied American and French forces trapped British troops."],
+["Which British general surrendered his army at Yorktown?","Lord Cornwallis","His surrender marked the end of major fighting."],
+["What 1786 law, written by Thomas Jefferson, protected freedom of religion in Virginia?","The Virginia Statute for Religious Freedom","James Madison helped push it through the legislature."],
+["Who was the first governor of independent Virginia?","Patrick Henry","He served from 1776 to 1779."],
+["Why was Virginia's 1776 constitution important?","It was one of the first written state constitutions in the new nation","It set up a new government based on the people's authority."],
+["How many U.S. presidents were born in Virginia?","Eight","That is why Virginia is called the 'Mother of Presidents.'"]
+]},
+{id:"statehood", title:"Growing Statehood (1780–1860)", cards:[
+["In what year did Virginia's capital move from Williamsburg to Richmond?","1780","Richmond sits on the James River at the fall line."],
+["What 1831 uprising was led by Nat Turner in Southampton County?","Nat Turner's Rebellion","An enslaved preacher who led a revolt that was put down."],
+["What canal system did Virginia build to link the James River with the western mountains?","The James River and Kanawha Canal","It was designed to carry goods westward."],
+["What change to Virginia's constitution in 1851 expanded voting to more white men?","Removing property requirements for most voters","More men could vote without owning land."],
+["What Virginia home was designed by Thomas Jefferson near Charlottesville?","Monticello","It is on the Piedmont."],
+["What Virginia region's farmers depended on enslaved labor for large plantations?","The Tidewater and Piedmont","Plantations grew tobacco, wheat, and other crops."],
+]},
+{id:"civilwar", title:"Civil War in Virginia", cards:[
+["Which Virginia city served as the capital of the Confederacy?","Richmond","It was the capital of Virginia too."],
+["In what year did Virginia secede from the Union?","1861","It happened in April, before the war's major battles."],
+["Which state was formed from western Virginia counties in 1863 during the Civil War?","West Virginia","Its people opposed secession."],
+["Where did Robert E. Lee surrender his army in April 1865?","Appomattox Court House","It is in central Virginia."],
+["Who commanded the Confederate Army of Northern Virginia?","Robert E. Lee","He was a Virginian from a famous family."],
+["Which Confederate general earned the nickname 'Stonewall' at the First Battle of Bull Run?","Thomas 'Stonewall' Jackson","He was killed in 1863."],
+["What was the first major battle of the Civil War, fought near Manassas in July 1861?","The First Battle of Bull Run (First Manassas)","Manassas is in Prince William County, close to Loudoun."],
+["What famous 1862 battle at Hampton Roads was between ironclad warships?","The Monitor and the Virginia (Merrimack)","It was the first battle between ironclad ships."],
+["What amendment to the U.S. Constitution abolished slavery in 1865?","The 13th Amendment","It was ratified in December 1865."]
+]},
+{id:"civilrights", title:"Civil Rights & 20th Century", cards:[
+["What 1954 Supreme Court case ruled that segregated public schools were unconstitutional?","Brown v. Board of Education","The case began in Kansas, but Virginia cases were part of it."],
+["What was 'Massive Resistance'?","A policy led by Virginia leaders to resist school integration after Brown","Some local governments closed public schools to avoid integration."],
+["Which Virginia senator led the Massive Resistance movement?","Senator Harry F. Byrd Sr.","He was from Winchester."],
+["Which Virginia county closed its public schools for five years after the Brown decision?","Prince Edward County","Schools were closed from 1959 to 1964."],
+["Which Richmond lawyer helped win major school desegregation cases in Virginia?","Oliver Hill","He was one of the lead attorneys in the Virginia cases."],
+["What 1962 airport in Loudoun and Fairfax counties was named after a Secretary of State?","Washington Dulles International Airport","It is named for John Foster Dulles."],
+]},
+{id:"economy", title:"Modern Virginia Economy", cards:[
+["What huge military headquarters building sits in Arlington, Virginia?","The Pentagon","Its five-sided shape gives it its name."],
+["Which major Virginia port is one of the largest on the East Coast?","The Port of Virginia (Hampton Roads)","Ships from around the world dock there."],
+["Which industry employs many people in Northern Virginia because of its location near Washington, D.C.?","Federal government and defense contracting","Many workers serve government agencies or contractors."],
+["What NASA facility on Virginia's Eastern Shore launches rockets and research aircraft?","Wallops Flight Facility","It is on the Eastern Shore."],
+["Which Loudoun community is known for its many data centers?","Ashburn","It is nicknamed 'Data Center Alley.'"],
+["Which Virginia city is the state's largest tourist destination on the Atlantic?","Virginia Beach","It has miles of oceanfront."],
+["What major U.S. military base is located in Norfolk?","Naval Station Norfolk","It is the largest naval base in the world."],
+["What technology industry grew strongly in Northern Virginia in recent decades?","Information technology and internet services","Many companies located near Dulles and along the Dulles corridor."]
+]},
+{id:"govt", title:"Virginia Government Today", cards:[
+["What are the three branches of Virginia's government?","Legislative, executive, and judicial","Same structure as the U.S. government."],
+["What is the name of Virginia's legislature?","The General Assembly","It meets in Richmond."],
+["What are the two houses of the Virginia General Assembly?","The House of Delegates and the Senate","One is the lower house and one is the upper house."],
+["Who is the chief executive of Virginia?","The Governor","The governor leads the executive branch."],
+["How long is a Virginia governor's term?","Four years","A governor cannot serve two terms in a row."],
+["Who presides over the Virginia Senate?","The Lieutenant Governor","This official is second in line to the governor."],
+["What is the highest court in Virginia called?","The Supreme Court of Virginia","It sits in Richmond."],
+["Who is Virginia's chief legal officer?","The Attorney General","It is an elected statewide office."],
+["When did Virginia adopt its current constitution?","1970, taking effect in 1971","It replaced earlier constitutions."],
+["How many U.S. Senators represent Virginia?","Two","Each state has two senators."]
+]},
+{id:"symbols", title:"Virginia Symbols & Culture", cards:[
+["What is Virginia's state bird?","The northern cardinal","It is a bright red bird."],
+["What is Virginia's state flower?","The American dogwood","It blooms in spring with white or pink blossoms."],
+["What is Virginia's state motto?","'Sic semper tyrannis' (Thus always to tyrants)","It is in Latin."],
+["What is Virginia's nickname?","The Old Dominion","It reflects Virginia's loyalty to the English crown during the colonial period."],
+["What is Virginia's state animal?","The Virginia white-tailed deer","It is common in forests across the state."],
+["What is the official state song of Virginia?","'Carry Me Back to Old Virginny'","It was written by James Bland."],
+["What is the state's nickname that reflects its many presidents?","The Mother of Presidents","Eight presidents were born there."]
+]},
+{id:"loudoun", title:"Loudoun County History", cards:[
+["In what year was Loudoun County created?","1757","It was carved from Fairfax County."],
+["Who was Loudoun County named after?","John Campbell, 4th Earl of Loudoun","He was a Scottish nobleman and British colonial commander."],
+["What is the county seat of Loudoun County?","Leesburg","It is a historic town in the county."],
+["What river forms much of Loudoun County's northern border?","The Potomac River","It flows past the county toward the Chesapeake Bay."],
+["What mountain range forms Loudoun County's western boundary?","The Blue Ridge Mountains","Part of the Appalachians."],
+["What 1861 Civil War battle took place on the Potomac River at Ball's Bluff in Loudoun County?","The Battle of Ball's Bluff","It was a Union defeat near Leesburg."],
+["What major airport lies partly within Loudoun County?","Washington Dulles International Airport","It opened in 1962."]
+]}
+];
+
+const STORE_KEY = "jamestown-flashcards-v1"; // same key so existing profiles keep their progress
+const COLORS = ["#8a4b2a","#3f7d4e","#2f5d8a","#8a2f6b","#b5651d","#5b4b8a"];
+
+/* Flatten all cards. Each card has a stable key like "vs3-0". */
+const ALL = [];
+const TOPIC = {};
+TOPICS.forEach(t => {
+  TOPIC[t.id] = t;
+  t.cards.forEach((c,i) => ALL.push({key:t.id+"-"+i, t:t.id, q:c[0], a:c[1], h:c[2]}));
+});
+const BY_KEY = Object.fromEntries(ALL.map(c => [c.key, c]));
+
+/* ==========================================================
+   STORAGE
+   ========================================================== */
+let db = load();
+function load(){
+  let d = null;
+  try{ d = JSON.parse(localStorage.getItem(STORE_KEY)); }catch(e){}
+  if(!d || !d.profiles) return {profiles:{}, activeId:null};
+  // migrate old numeric card ids (1-100, Jamestown) to the new keys ("vs3-0" ...)
+  for(const p of Object.values(d.profiles)){
+    p.progress = p.progress || {};
+    p.days = p.days || [];
+    p.quizzes = p.quizzes || [];
+    const np = {};
+    for(const [k,v] of Object.entries(p.progress)){
+      np[/^\d+$/.test(k) ? "vs3-"+(Number(k)-1) : k] = v;
+    }
+    p.progress = np;
+  }
+  return d;
+}
+function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function prof(){ return db.profiles[db.activeId]; }
+function gp(){ return prof().progress; }
+function stOf(key){ return gp()[key] || {status:"new", right:0, wrong:0}; }
+function dayKey(d){ return d.toLocaleDateString("en-CA"); }
+function touchDay(){
+  const days = prof().days;
+  const t = dayKey(new Date());
+  if(!days.includes(t)) days.push(t);
+}
+function mark(key, ok){
+  const p = gp();
+  const c = p[key] || {status:"new", right:0, wrong:0};
+  if(ok){ c.status = "known"; c.right++; } else { c.status = "learning"; c.wrong++; }
+  c.last = Date.now();
+  p[key] = c;
+  touchDay();
+}
+function streak(){
+  const days = new Set(prof().days);
+  const d = new Date();
+  if(!days.has(dayKey(d))) d.setDate(d.getDate()-1);
+  let n = 0;
+  while(days.has(dayKey(d))){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+
+/* ==========================================================
+   HELPERS
+   ========================================================== */
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function esc(s){ return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function topicKnown(tid){ return TOPIC[tid].cards.reduce((n,_,i)=> n + (stOf(tid+"-"+i).status==="known"?1:0), 0); }
+function topicSize(tid){ return TOPIC[tid].cards.length; }
+function scopeLabel(s){
+  if(s==="all") return "Mixed review (all topics)";
+  if(s==="missed") return "Missed cards only";
+  return TOPIC[s] ? TOPIC[s].title : "";
+}
+function inScope(){
+  return ALL.filter(c =>
+    scope==="all" ? true :
+    scope==="missed" ? stOf(c.key).status==="learning" :
+    c.t===scope);
+}
+function missedCount(){ return ALL.filter(c => stOf(c.key).status==="learning").length; }
+
+/* ==========================================================
+   STATE
+   ========================================================== */
+let view = "profiles", tab = "topics", scope = "all";
+let deck = [], flipped = false, hintOn = false;
+let qz = null; // quiz state
+
+function resetStudy(){
+  deck = shuffle(inScope().filter(c => scope==="missed" || stOf(c.key).status!=="known").map(c=>c.key));
+  flipped = false; hintOn = false;
+}
+function startQuiz(){
+  const pool = shuffle(inScope()).slice(0, 10);
+  qz = {list: pool.map(c=>c.key), i:0, score:0, opts:[], ans:null, done:false};
+  if(pool.length) buildOpts();
+}
+function buildOpts(){
+  const c = BY_KEY[qz.list[qz.i]];
+  const sameTopic = shuffle(ALL.filter(x => x.t===c.t && x.a!==c.a));
+  const others = shuffle(ALL.filter(x => x.t!==c.t && x.a!==c.a));
+  const seen = new Set([c.a]); const picks = [];
+  for(const x of sameTopic.concat(others)){
+    if(picks.length>=3) break;
+    if(!seen.has(x.a)){ seen.add(x.a); picks.push(x.a); }
+  }
+  qz.opts = shuffle([c.a, ...picks]);
+  qz.ans = null;
+}
+function answerQuiz(idx){
+  if(!qz || qz.done || qz.ans!==null) return;
+  const c = BY_KEY[qz.list[qz.i]];
+  qz.ans = idx;
+  const ok = qz.opts[idx] === c.a;
+  if(ok) qz.score++;
+  mark(c.key, ok);
+  save();
+}
+function nextQuiz(){
+  qz.i++;
+  if(qz.i >= qz.list.length){
+    qz.done = true;
+    prof().quizzes.unshift({date:Date.now(), scope, score:qz.score, total:qz.list.length});
+    prof().quizzes = prof().quizzes.slice(0,30);
+    save();
+  } else buildOpts();
+}
+function grade(ok){
+  const key = deck[0];
+  mark(key, ok);
+  deck.shift();
+  if(!ok) deck.push(key);
+  flipped = false; hintOn = false;
+  save();
+}
+
+/* ==========================================================
+   RENDER
+   ========================================================== */
+const app = document.getElementById("app");
+const hdr = document.getElementById("hdr");
+
+function render(){
+  if(!db.activeId || !db.profiles[db.activeId]) view = "profiles";
+  if(view==="profiles"){ hdr.innerHTML=""; renderProfiles(); return; }
+  const p = prof();
+  hdr.innerHTML = `<span class="row" style="margin:0"><span class="avatar" style="background:${p.color};width:30px;height:30px;font-size:.9rem">${esc(p.name[0].toUpperCase())}</span><strong>${esc(p.name)}</strong></span>
+    <button class="ghost" data-act="switch">Switch profile</button>`;
+  const tabs = [["topics","Topics"],["study","Flashcards"],["quiz","Quiz"],["progress","Progress"]];
+  const nav = `<div class="tabs">${tabs.map(([k,l]) =>
+    `<button class="${tab===k?'on':''}" data-act="tab" data-tab="${k}">${l}</button>`).join("")}</div>`;
+  const body = tab==="topics" ? renderTopics() : tab==="study" ? renderStudy() : tab==="quiz" ? renderQuiz() : renderProgress();
+  app.innerHTML = nav + body;
+}
+
+function renderProfiles(){
+  const ids = Object.keys(db.profiles);
+  app.innerHTML = `
+    <h2>Who's studying?</h2>
+    ${ids.length ? `<div class="profiles">${ids.map(id => {
+      const p = db.profiles[id];
+      const known = ALL.filter(c => (p.progress[c.key]||{}).status==="known").length;
+      return `<div class="pcard">
+        <button class="pick" data-act="pick" data-id="${id}">
+          <span class="avatar" style="background:${p.color}">${esc(p.name[0].toUpperCase())}</span>
+          <span>${esc(p.name)}<small>${known}/${ALL.length} mastered</small></span>
+        </button>
+        <button class="del" data-act="del" data-id="${id}" title="Delete profile">✕</button>
+      </div>`;}).join("")}</div>` : `<div class="empty">No profiles yet. Create one below.</div>`}
+    <form class="row" id="newp">
+      <input name="pname" placeholder="New profile name" maxlength="24" required>
+      <button type="submit">Add profile</button>
+    </form>
+    <div class="row">
+      <button class="ghost" data-act="export">Export all data</button>
+      <label class="btnlike ghost" style="cursor:pointer">Import<input type="file" id="imp" accept="application/json" hidden></label>
+    </div>`;
+}
+
+function renderTopics(){
+  const totalKnown = ALL.filter(c => stOf(c.key).status==="known").length;
+  const pct = Math.round(totalKnown/ALL.length*100);
+  return `
+    <div class="meta"><span>${totalKnown}/${ALL.length} cards mastered across the year</span><span>${pct}%</span></div>
+    <div class="bar"><span style="width:${pct}%"></span></div>
+    <div class="row">
+      <button data-act="scope" data-s="all">Mixed review (all ${ALL.length})</button>
+      <button class="ghost" data-act="scope" data-s="missed">Review missed (${missedCount()})</button>
+    </div>
+    <h2 style="margin-top:18px">Study topics</h2>
+    <div class="grid">${TOPICS.map((t,n) => {
+      const k = topicKnown(t.id), total = topicSize(t.id), p = Math.round(k/total*100);
+      return `<div class="topic">
+        <div class="top"><span>Topic ${n+1}</span><span>${k}/${total}</span></div>
+        <h3>${esc(t.title)}</h3>
+        <div class="bar"><span style="width:${p}%"></span></div>
+        <div class="actions">
+          <button data-act="studyTopic" data-s="${t.id}">Flashcards</button>
+          <button class="ghost" data-act="quizTopic" data-s="${t.id}">Quiz</button>
+        </div>
+      </div>`;}).join("")}</div>`;
+}
+
+function scopeSelect(){
+  const opts = [
+    `<option value="all" ${scope==="all"?"selected":""}>Mixed review (all topics)</option>`,
+    `<option value="missed" ${scope==="missed"?"selected":""}>Missed cards only</option>`,
+    ...TOPICS.map(t => `<option value="${t.id}" ${scope===t.id?"selected":""}>${esc(t.title)}</option>`)
+  ].join("");
+  return `<select id="scope">${opts}</select>`;
+}
+
+function renderStudy(){
+  const list = inScope();
+  const known = list.filter(c => stOf(c.key).status==="known").length;
+  const pct = list.length ? Math.round(known/list.length*100) : 0;
+  let body;
+  if(list.length===0){
+    body = `<div class="empty">No cards here yet. Missed cards will appear after you mark some as "Need practice."</div>`;
+  } else if(deck.length===0){
+    body = `<div class="card" style="text-align:center">
+      <p class="text">Round complete. ${known}/${list.length} mastered in this set.</p>
+      <div class="row" style="justify-content:center"><button data-act="again">Start a new round</button>
+      <button class="ghost" data-act="quizTopic" data-s="${scope}">Take a quiz instead</button></div>
+    </div>`;
+  } else {
+    const c = BY_KEY[deck[0]];
+    body = `
+      <div class="card">
+        <div class="label">${esc(TOPIC[c.t].title)}</div>
+        <p class="text">${esc(c.q)}</p>
+        ${!flipped ? `
+          ${hintOn ? `<p class="hint">Hint: ${esc(c.h)}</p>` : ""}
+          <div class="actions">
+            <button class="ghost" data-act="hint">${hintOn?'Hide hint':'Show hint'}</button>
+            <button data-act="reveal">Show answer</button>
+          </div>` : `
+          <div class="label">Answer</div>
+          <p class="text" style="color:var(--accent)">${esc(c.a)}</p>
+          <div class="actions">
+            <button class="danger" data-act="grade" data-ok="0">Need practice</button>
+            <button class="good" data-act="grade" data-ok="1">Got it</button>
+          </div>`}
+      </div>
+      <div class="meta"><span>Space to flip · 1 = need practice · 2 = got it</span><span>${deck.length} left this round</span></div>`;
+  }
+  return `
+    <div class="row between">${scopeSelect()}<span class="tag">${esc(scopeLabel(scope))}</span></div>
+    <div class="meta"><span>${known}/${list.length} mastered in this set</span><span>${pct}%</span></div>
+    <div class="bar"><span style="width:${pct}%"></span></div>
+    <div style="margin-top:16px">${body}</div>`;
+}
+
+function renderQuiz(){
+  const list = inScope();
+  let body;
+  if(list.length===0){
+    body = `<div class="empty">No cards in this set yet.</div>`;
+  } else if(!qz || (qz.list.length===0)){
+    body = `<div class="empty">Nothing to quiz here.</div>`;
+  } else if(qz.done){
+    const pct = Math.round(qz.score/qz.list.length*100);
+    body = `<div class="card" style="text-align:center">
+      <p class="text">You scored ${qz.score} of ${qz.list.length} (${pct}%).</p>
+      <div class="row" style="justify-content:center"><button data-act="retake">Take another quiz</button>
+      <button class="ghost" data-act="tab" data-tab="progress">See progress</button></div>
+    </div>`;
+  } else {
+    const c = BY_KEY[qz.list[qz.i]];
+    const answered = qz.ans!==null;
+    body = `
+      <div class="card">
+        <div class="label">Question ${qz.i+1} of ${qz.list.length} · ${esc(TOPIC[c.t].title)}</div>
+        <p class="text">${esc(c.q)}</p>
+        ${qz.opts.map((o,i) => {
+          let cls = "";
+          if(answered){
+            if(o===c.a) cls = "right";
+            else if(i===qz.ans) cls = "wrong";
+          }
+          return `<button class="opt ${cls}" data-act="ans" data-i="${i}" ${answered?"disabled":""}>${String.fromCharCode(65+i)}. ${esc(o)}</button>`;
+        }).join("")}
+        ${answered ? `<div class="feedback">${qz.opts[qz.ans]===c.a ? "Correct!" : "Not quite. The answer is highlighted above."}</div>
+          <div class="actions"><button data-act="qnext">${qz.i+1<qz.list.length?"Next question":"See results"}</button></div>` : ""}
+      </div>
+      <div class="meta"><span>Keys: 1–4 to answer, Enter for next</span><span>Score: ${qz.score}</span></div>`;
+  }
+  return `
+    <div class="row between">${scopeSelect()}<span class="tag">${esc(scopeLabel(scope))}</span></div>
+    <div class="row"><button data-act="retake">${qz && !qz.done ? "Restart quiz" : "Start quiz"}</button>
+      <span class="meta" style="margin:0">Up to 10 random questions</span></div>
+    <div style="margin-top:12px">${body}</div>`;
+}
+
+function renderProgress(){
+  const p = gp();
+  const statuses = ALL.map(c => (p[c.key]||{}).status || "new");
+  const knownN = statuses.filter(s=>s==="known").length;
+  const learnN = statuses.filter(s=>s==="learning").length;
+  const newN = statuses.filter(s=>s==="new").length;
+  const answers = Object.values(p).reduce((n,x)=>n+(x.right||0)+(x.wrong||0),0);
+  const pct = Math.round(knownN/ALL.length*100);
+
+  const topicRows = TOPICS.map(t => {
+    const k = topicKnown(t.id), total = topicSize(t.id), sp = Math.round(k/total*100);
+    return `<div class="std">
+      <div class="top"><span>${esc(t.title)}</span><span>${k}/${total}</span></div>
+      <div class="bar"><span style="width:${sp}%"></span></div></div>`;
+  }).join("");
+
+  const needs = ALL.filter(c => (p[c.key]||{}).status==="learning");
+  const needsHtml = needs.length ? `<div class="panel">${needs.map(c=>`
+      <details><summary>${esc(c.q)} <span class="tag">${esc(TOPIC[c.t].title)}</span></summary><p><b>Answer:</b> ${esc(c.a)}</p></details>`).join("")}</div>`
+    : `<div class="empty">Nothing is marked "need practice" right now.</div>`;
+
+  const quizzes = (prof().quizzes||[]).slice(0,8);
+  const quizHtml = quizzes.length ? `<div class="panel">${quizzes.map(q=>`
+      <details><summary>${new Date(q.date).toLocaleDateString()} · ${esc(scopeLabelFor(q.scope))} · ${q.score}/${q.total}</summary></details>`).join("")}</div>`
+    : `<div class="empty">No quizzes taken yet.</div>`;
+
+  return `
+    <div class="stats">
+      <div class="stat"><b>${pct}%</b><span>Mastered (${knownN}/${ALL.length})</span></div>
+      <div class="stat"><b>${learnN}</b><span>Need practice</span></div>
+      <div class="stat"><b>${newN}</b><span>Not yet studied</span></div>
+      <div class="stat"><b>${streak()}</b><span>Day streak</span></div>
+      <div class="stat"><b>${answers}</b><span>Answers given</span></div>
+    </div>
+    <h2>By topic</h2>
+    ${topicRows}
+    <h2 style="margin-top:24px">Review these</h2>
+    ${needsHtml}
+    <h2 style="margin-top:24px">Recent quizzes</h2>
+    ${quizHtml}
+    <div class="row" style="margin-top:24px">
+      <button class="danger" data-act="reset">Reset this profile's progress</button>
+    </div>`;
+}
+function scopeLabelFor(s){ return s==="all" ? "Mixed review" : s==="missed" ? "Missed cards" : (TOPIC[s]?TOPIC[s].title:""); }
+
+/* ==========================================================
+   EVENTS
+   ========================================================== */
+app.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]");
+  if(!el || el.disabled) return;
+  const a = el.dataset.act;
+  if(a==="pick"){ db.activeId = el.dataset.id; save(); view="main"; tab="topics"; scope="all"; }
+  else if(a==="del"){
+    const p = db.profiles[el.dataset.id];
+    if(confirm(`Delete profile "${p.name}" and all its progress?`)){
+      delete db.profiles[el.dataset.id];
+      if(db.activeId===el.dataset.id) db.activeId = null;
+      save();
+    }
+  }
+  else if(a==="switch"){ db.activeId=null; save(); view="profiles"; }
+  else if(a==="tab"){ tab = el.dataset.tab; if(tab==="study") resetStudy(); if(tab==="quiz" && !qz) startQuiz(); }
+  else if(a==="scope"){ scope = el.dataset.s; tab="study"; resetStudy(); }
+  else if(a==="studyTopic"){ scope = el.dataset.s; tab="study"; resetStudy(); }
+  else if(a==="quizTopic"){ scope = el.dataset.s; tab="quiz"; startQuiz(); }
+  else if(a==="reveal"){ flipped = true; }
+  else if(a==="hint"){ hintOn = !hintOn; }
+  else if(a==="grade"){ grade(el.dataset.ok==="1"); }
+  else if(a==="again"){ resetStudy(); }
+  else if(a==="ans"){ answerQuiz(Number(el.dataset.i)); }
+  else if(a==="qnext"){ nextQuiz(); }
+  else if(a==="retake"){ startQuiz(); }
+  else if(a==="reset"){
+    if(confirm("Reset all progress for this profile?")){
+      prof().progress = {}; prof().days = []; prof().quizzes = []; save();
+      resetStudy(); startQuiz();
+    }
+  }
+  else if(a==="export"){
+    const blob = new Blob([JSON.stringify(db,null,2)],{type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const link = Object.assign(document.createElement("a"),{href:url,download:"virginia-studies-backup.json"});
+    link.click(); URL.revokeObjectURL(url);
+  }
+  render();
+});
+
+app.addEventListener("submit", e => {
+  if(e.target.id !== "newp") return;
+  e.preventDefault();
+  const name = e.target.elements.pname.value.trim();
+  if(!name) return;
+  const id = uid();
+  const n = Object.keys(db.profiles).length;
+  db.profiles[id] = {name, color: COLORS[n % COLORS.length], progress:{}, days:[], quizzes:[], created:Date.now()};
+  db.activeId = id; save(); view="main"; tab="topics"; scope="all";
+  render();
+});
+
+app.addEventListener("change", e => {
+  if(e.target.id === "scope"){
+    scope = e.target.value;
+    if(tab==="study"){ resetStudy(); }
+    if(tab==="quiz"){ startQuiz(); }
+    render();
+  }
+  if(e.target.id === "imp"){
+    const f = e.target.files[0]; if(!f) return;
+    f.text().then(t => {
+      const d = JSON.parse(t);
+      if(!d || !d.profiles) throw new Error("bad");
+      // run the same migration on imported data
+      for(const [id,p] of Object.entries(d.profiles)){
+        p.progress = p.progress || {}; p.days = p.days || []; p.quizzes = p.quizzes || [];
+        const np = {};
+        for(const [k,v] of Object.entries(p.progress)) np[/^\d+$/.test(k) ? "vs3-"+(Number(k)-1) : k] = v;
+        p.progress = np;
+        db.profiles[id] = p;
+      }
+      save(); render();
+    }).catch(() => alert("That file isn't a valid backup."));
+  }
+});
+
+document.addEventListener("keydown", e => {
+  if(view!=="main") return;
+  if(["SELECT","INPUT","TEXTAREA"].includes(e.target.tagName)) return;
+  if(tab==="study" && deck.length){
+    if((e.key===" " || e.key==="Enter") && !flipped){ e.preventDefault(); flipped = true; render(); }
+    else if(flipped && e.key==="1"){ grade(false); render(); }
+    else if(flipped && e.key==="2"){ grade(true); render(); }
+  }
+  if(tab==="quiz" && qz && !qz.done && qz.list.length){
+    const n = Number(e.key);
+    if(qz.ans===null && n>=1 && n<=qz.opts.length){ answerQuiz(n-1); render(); }
+    else if(qz.ans!==null && (e.key==="Enter" || e.key===" ")){ e.preventDefault(); nextQuiz(); render(); }
+  }
+});
+
+if(db.activeId && db.profiles[db.activeId]){ view="main"; tab="topics"; }
+render();
+</script>
+</body>
+</html>
